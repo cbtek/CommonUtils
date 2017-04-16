@@ -20,36 +20,9 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
 */
-
 #pragma once
-
-#include "XMLReader.h"
-#include "XMLDataElement.h"
-#include "XMLStreamWriter.h"
-
-using namespace cbtek::common::utility;
-
-namespace cbtek {
-namespace common {
-namespace utility {
-
-class XMLUtils
-{
-public:
-    /**
-     * @brief getEncodedString
-     * @param rawString
-     * @return
-     */
-    static std::string getEncodedString(const std::string &  rawString);
-
-    /**
-     * @brief getDecodedString
-     * @param xmlString
-     * @return
-     */
-    static std::string getDecodedString(const std::string & xmlString);
-};
-
-}}}//namespace
+#include "ColorFactory.h"
+#include "Color.h"
+#include "ColorLoop.h"

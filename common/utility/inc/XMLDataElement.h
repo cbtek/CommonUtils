@@ -54,7 +54,10 @@ public:
     const ChildElementVector & getChildren() const;
 
     const std::string & getElementName() const;
-    const std::string & getElementData() const;
+    std::string getElementData(bool trimmed=false) const;
+    std::int64_t getElementDataAsInteger() const;
+    double getElementDataAsFloat() const;
+
     std::string getAttributeValue(const std::string & attributeName,bool caseSensitive=false) const;
     std::string getAttributeName(size_t index)const;
     std::string getAttributeValue(size_t index) const;    
@@ -63,6 +66,7 @@ public:
     XMLDataElement * getNextSibling() const;
     XMLDataElement * getChildAt(size_t index)const;
     XMLDataElement * getChild(const std::string & name) const;
+    std::string getChildElementData(const std::string& name) const;
 
     bool attributeExists(const std::string &attributeName,bool caseSensitive=false) const;
 
@@ -94,6 +98,32 @@ public:
                     std::make_pair(attributeName,
                                               StringUtils::toString(attributeValue)));
     }
+
+    template <typename Number>
+    Number getAttributeValueAsType(const std::string& attributeName) const
+    {
+        Number valueNumber;
+        std::string valueStr = getAttributeValue(attributeName);
+        std::stringstream in(valueStr);
+        in>>valueNumber;
+        return valueNumber;
+    }
+
+    template <typename Number>
+    Number getChildElementDataAsType(const std::string& name) const
+    {
+        std::string data = getChildElementData(name);
+        if (!data.empty())
+        {
+            Number valueNumber;
+            std::stringstream in(data);
+            in>>valueNumber;
+            return valueNumber;
+        }
+        return 0;
+    }
+
+    bool getAttributeValueAsBool(const std::string& attributeName) const;
 
 protected:
 

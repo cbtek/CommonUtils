@@ -118,9 +118,19 @@ bool XMLDataElement::attributeExists(const std::string & attributeName, bool cas
 }
 
 
-const std::string &XMLDataElement::getElementData() const
+std::string XMLDataElement::getElementData(bool trimmed) const
+{    
+    return trimmed ? StringUtils::trimmed(m_Data) : m_Data;
+}
+
+int64_t XMLDataElement::getElementDataAsInteger() const
 {
-    return m_Data;
+    return StringUtils::toInt(StringUtils::trimmed(getElementData()));
+}
+
+double XMLDataElement::getElementDataAsFloat() const
+{
+    return StringUtils::toFloat64(StringUtils::trimmed(getElementData()));
 }
 
 std::string XMLDataElement::getAttributeValue(const std::string & attributeName,
@@ -172,6 +182,16 @@ XMLDataElement *XMLDataElement::getChild(const std::string &name) const
         }
     }
     return NULL;
+}
+
+std::string XMLDataElement::getChildElementData(const std::string &name) const
+{
+    XMLDataElement * child = getChild(name);
+    if (child)
+    {
+        return child->getElementData(true);
+    }
+    return "";
 }
 
 bool XMLDataElement::childExists(const std::string &name, bool caseSensitive)
@@ -278,6 +298,16 @@ void XMLDataElement::addAttribute(const std::string &attributeName,
                                   const double &attributeValue)
 {
     m_Attributes.push_back(std::make_pair(attributeName,StringUtils::toString(attributeValue)));
+}
+
+bool XMLDataElement::getAttributeValueAsBool(const std::string &attributeName) const
+{
+    std::string value = getAttributeValue(attributeName);
+    if (StringUtils::toUpperTrimmed(value) == "TRUE")
+    {
+        return true;
+    }
+    else return false;
 }
 
 XMLDataElement *XMLDataElement::findInSubTree(const std::string & name,

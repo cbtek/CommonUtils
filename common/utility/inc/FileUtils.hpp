@@ -23,8 +23,7 @@ SOFTWARE.
 
 */
 
-#ifndef _CBTEK_COMMON_UTILITY_FILEUTILS_HPP_
-#define _CBTEK_COMMON_UTILITY_FILEUTILS_HPP_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -75,7 +74,6 @@ namespace FileUtils {
  * @return Formated version of dirPath that is ready
  * for directory searching
  */
-
 inline std::string getSearchPath(const std::string & dirPath)
 {
 #ifdef _WIN32
@@ -138,15 +136,8 @@ inline bool isDirectory(const std::string &filePath)
 ///
 inline bool fileExists(const std::string & filePath)
 {
-    if (FILE *file = fopen(filePath.c_str(), "r"))
-    {
-        fclose(file);
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    std::ifstream in(filePath.c_str(), std::ios::in);
+    return in.is_open();
 }
 ///
 /// @brief This function returns all lines from the file as a vector
@@ -201,7 +192,7 @@ inline std::vector<std::string> getFileLines(const std::string &filePath)
 ///
 inline void getFileContents(const std::string &filePath, std::string &data)
 {
-    std::fstream in(filePath.c_str());
+    std::fstream in(filePath.c_str(), std::ios::in);
 
     while(in)
     {
@@ -448,6 +439,9 @@ inline void getFileEntries(const std::string &dirPath,
             } while (FindNextFileA(h, &fdat) != 0);
 
             FindClose(h);
+            std::set<std::string> sortedFileSet(entryListOut.begin(),entryListOut.end());
+            entryListOut.clear();
+            entryListOut = std::vector<std::string>(sortedFileSet.begin(),sortedFileSet.end());
             StringUtils::removeAllThatEndWith(entryListOut,"\\.");
             StringUtils::removeAllThatEndWith(entryListOut,"\\..");
         }
@@ -478,12 +472,21 @@ inline void getFileEntries(const std::string &dirPath,
 
             }
             closedir(dir);
+            std::set<std::string> sortedFileSet(entryListOut.begin(),entryListOut.end());
+            entryListOut.clear();
+            entryListOut = std::vector<std::string>(sortedFileSet.begin(),sortedFileSet.end());
             StringUtils::removeAllThatEndWith(entryListOut,"/.");
             StringUtils::removeAllThatEndWith(entryListOut,"/..");
         }
         #endif
 
 }
+
+/**
+ * @brief getRecursiveFolders
+ * @param dirPath
+ * @param folders
+ */
 inline void getRecursiveFolders(const std::string & dirPath,
                                 std::set<std::string> & folders)
 {
@@ -517,9 +520,6 @@ inline void getRecursiveFileEntries(const std::string &dirPath,
         getFileEntries(folder,true,extensionFilters,entryListOut);
     }
 }
-
-
-
 
 /**
  * @brief Returns the directory portion of a filePath
@@ -585,9 +585,6 @@ inline std::string getCurrentPath()
 }
 
 
-
-
-
 /**
  * @brief This function copies a file from a source to its destination
  * @param sourceFile The location of the source file
@@ -629,7 +626,12 @@ inline void deleteFile(const std::string & sourceFile)
     }
 }
 
-inline void createDirectory(const std::string &dirPath)
+/**
+ * @brief createDirectory
+ * @param dirPath
+ * @return
+ */
+inline bool createDirectory(const std::string &dirPath)
 {
     int nError=0;
     #if defined(_WIN32)
@@ -638,8 +640,15 @@ inline void createDirectory(const std::string &dirPath)
     #else
         nError = mkdir(dirPath.c_str(),0733);
     #endif
+    return isDirectory(dirPath);
 }
 
+/**
+ * @brief writeRawContentsToFile
+ * @param filePath
+ * @param buffer
+ * @param bufferSize
+ */
 inline void writeRawContentsToFile(const std::string & filePath,const char * buffer, size_t bufferSize)
 {
     std::ofstream out(filePath.c_str(),std::ios::out | std::ios::binary);
@@ -652,11 +661,21 @@ inline void writeRawContentsToFile(const std::string & filePath,const char * buf
     out.close();
 }
 
+/**
+ * @brief renameFile
+ * @param oldFilePath
+ * @param newFilePath
+ */
 inline void renameFile(const std::string &oldFilePath, const std::string &newFilePath)
 {
     std::rename(oldFilePath.c_str(),newFilePath.c_str());
 }
 
+/**
+ * @brief getRandomFolderName
+ * @param length
+ * @return
+ */
 inline std::string getRandomFolderName(int length)
 {
     Random rnd;
@@ -684,6 +703,12 @@ inline std::string getRandomFolderName(int length)
     return file;
 }
 
+/**
+ * @brief getRandomFileName
+ * @param length
+ * @param extensionLength
+ * @return
+ */
 inline std::string getRandomFileName(int length, int extensionLength)
 {
     Random rnd;
@@ -713,20 +738,40 @@ inline std::string getRandomFileName(int length, int extensionLength)
     return file;
 }
 
+/**
+ * @brief getFileExtension
+ * @param filePath
+ * @return
+ */
 inline std::string getFileExtension(const std::string & filePath)
 {
+    std::string path = StringUtils::trimmed(filePath);
     std::string ext;
-    for (int a1 = filePath.size()-1;a1>=0;--a1)
+    bool hasExt = false;
+    for (int a1 = path.size()-1;a1>=0;--a1)
     {
-        if(filePath[a1]=='.')
+        if(path[a1]=='.')
+        {
+            if (a1 > 0)
+            {
+                hasExt = true;
+            }
+            break;
+        }
+        else if (path[a1] == '\\' || path[a1] == '/')
         {
             break;
         }
-        ext.push_back(filePath[a1]);
+        ext.insert(ext.begin()+0,path[a1]);
     }
-    return ext;
+    return hasExt ? ext : "";
 }
 
+/**
+ * @brief deleteFolder
+ * @param dirPath
+ * @return
+ */
 inline int deleteFolder(const std::string &dirPath)
 {
 
@@ -874,5 +919,77 @@ inline int deleteFolder(const std::string &dirPath)
 #endif
 
 }
+
+/**
+ * @brief isDirectoryWritable
+ * @param directoryPath
+ * @return
+ */
+static bool isDirectoryWritable(const std::string & directoryPath)
+{
+    std::string file = buildFilePath(directoryPath,".writable.temp");
+    std::ofstream out(file.c_str(),std::ios::out);
+    bool writable = out.is_open();
+    out.close();
+    if (writable)
+    {
+        deleteFile(file);
+    }
+    return writable;
+}
+
+/**
+ * @brief getSanitizedPathName
+ * @param filePathName
+ * @param replaceWithUnderscore
+ * @return
+ */
+static std::string getSanitizedPathName(const std::string& filePathName,
+                                        bool replaceWithUnderscore = false)
+{
+    std::string pathName = filePathName;
+    for (int a1 = pathName.size()-1; a1 >=0 ;--a1)
+    {
+        if (pathName[a1] == '<' ||
+                pathName[a1] == '>' ||
+                pathName[a1] == '|' ||
+                pathName[a1] == '\"' ||
+                pathName[a1] == '\b' ||
+                pathName[a1] == '\0' ||
+                pathName[a1] == '\t' ||
+                pathName[a1] < 32)
+        {
+            if (replaceWithUnderscore)
+            {
+                pathName[a1] = '_';
+            }
+            else
+            {
+                pathName.erase(pathName.begin()+a1);
+            }
+        }
+    }
+    return pathName;
+}
+
+/**
+ * @brief getFileEntries
+ * @param dirPath
+ * @param filter
+ * @param fullPath
+ * @return
+ */
+static std::vector<std::string> getFileEntries(const std::string& dirPath,
+                                               const std::string& filter="",
+                                               bool fullPath = true)
+{
+    std::vector<std::string> entries;
+    std::vector<std::string> filters;
+    if (!StringUtils::isEmpty(filter))
+    {
+        filters = StringUtils::split(filter,",");
+    }
+    getFileEntries(dirPath,fullPath,filters,entries);
+    return entries;
+}
 }}}}
-#endif // _CBTEK_COMMON_UTILITY_FILEUTILS_HPP_

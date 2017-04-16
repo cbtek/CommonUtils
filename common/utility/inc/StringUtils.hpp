@@ -260,36 +260,7 @@ inline T toNumber(const std::string & value)
     return returnValue;
 }
 
-/**
- * @brief Prints vector of templated type if underlying type
- *        supports it.
- * @param out The stream to write to
- * @param values The values to print
- */
-template <typename T>
-inline void printVector(std::ostream & out,
-                        const std::vector<T> & values)
-{
-    size_t count = values.size();
-    for (size_t a1 = 0;a1<count;++a1)
-    {
-        out <<"["<<a1<<"] = "<< values[a1]<<std::endl;
-    }
-}
 
-
-/**
- * @brief toString
- * @param value
- * @return
- */
-template <typename T>
-inline std::string toString(T value)
-{
-    std::ostringstream out;
-    out << value;
-    return out.str();
-}
 
 /**
  * @brief Perfroms string replace (in-place)
@@ -327,6 +298,119 @@ inline void replaceInPlace(std::string &inputString,
         }
     }
 }
+
+/**
+ * @brief Prints vector of templated type if underlying type
+ *        supports it.
+ * @param out The stream to write to
+ * @param values The values to print
+ */
+template <typename T>
+inline void printVector(std::ostream & out,
+                        const std::vector<T> & values)
+{
+    size_t count = values.size();
+    for (size_t a1 = 0;a1<count;++a1)
+    {
+        out <<"["<<a1<<"] = "<< values[a1]<<std::endl;
+    }
+}
+
+inline std::string formatWithThousandsLabel(const std::string& numericString)
+{
+    std::string numberStr = numericString;
+    size_t decimalIndex = numberStr.find(".");
+    std::string modifier;
+    bool hasNumericModifier  = (numberStr.size() && !std::isdigit(numberStr[0]));
+    if (hasNumericModifier)
+    {
+        modifier.push_back(numberStr[0]);
+    }
+
+    if (decimalIndex == std::string::npos)
+    {
+        decimalIndex = numberStr.size()-1;
+    }
+    else
+    {
+        decimalIndex--;
+    }
+
+    size_t counter = 0;
+    int count = static_cast<int>(decimalIndex);
+    for (int a1 = count; a1 >= 0; --a1)
+    {
+        counter++;
+        if (counter == 3 && a1 != 0)
+        {
+            counter = 0;            
+            numberStr.insert(numberStr.begin() + a1, ',');
+        }
+    }
+
+    if (hasNumericModifier)
+    {
+        StringUtils::replaceInPlace(numberStr,modifier+",",modifier);
+    }
+    return numberStr;
+}
+
+/**
+ * @brief toString
+ * @param value
+ * @return
+ */
+template <typename T>
+inline std::string toString(T value,
+                            bool addThousandsSeperator = false)
+{
+    std::ostringstream out;
+    out << value;
+    std::string numberStr = out.str();
+    if (addThousandsSeperator)
+    {
+        numberStr = formatWithThousandsLabel(numberStr);
+    }
+    return numberStr;
+}
+
+
+/**
+* @brief Converts floating point values to "x.xxxx" form
+* @param floatValue Floating point value
+* @param digitsAfterDecimal Number of digits to include after decimal
+* @return string of converted floating point value
+*/
+inline std::string toString(double floatValue,
+                            int digitsAfterDecimal = 6,
+                            bool addThousandsSeperator = false)
+{
+    std::ostringstream stream;
+    stream << std::fixed << std::setprecision(digitsAfterDecimal) << floatValue;
+    std::string numberStr = stream.str();
+    if (addThousandsSeperator)
+    {
+       numberStr = formatWithThousandsLabel(numberStr);
+    }
+    return numberStr;
+}
+
+/**
+ * @brief toString
+ * @param floatValue
+ * @param digitsAfterDecimal
+ * @param addThousandsSeperator
+ * @return
+ */
+inline std::string toString(float floatValue,
+                            int digitsAfterDecimal = 6,
+                            bool addThousandsSeperator = false)
+{
+    return toString(static_cast<double>(floatValue),
+                    digitsAfterDecimal,
+                    addThousandsSeperator);
+}
+
 
 /**
  * @brief Perfroms string replace (in-place)
@@ -403,9 +487,77 @@ inline std::wstring toLower(const std::wstring &str)
     return strOut;
 }
 
+/**
+ * @brief trimmedInPlace
+ * @param str
+ * @param customCharToTrim
+ */
+inline void trimmedInPlace(std::string &str,
+                           char customCharToTrim,
+                           bool trimAll = true)
+{
+    int count = static_cast<int>(str.size());
+    for (int a1 = 0;a1 < count;++a1)
+    {
+        size_t index = static_cast<size_t>(a1);
+        if (str[index] == customCharToTrim)
+        {
+            str.erase(str.begin() + a1);
+            --a1;
+            --count;
+            if (!trimAll)
+            {
+                break;
+            }
+            continue;
+        }
+        else break;
+    }
+
+    if (count == 0)
+    {
+        return;
+    }
+
+    count = static_cast<int>(str.size());
+    for (long a1 = (count - 1); a1 >= 0; --a1)
+    {
+        size_t index = static_cast<size_t>(a1);
+        if (str[index] == customCharToTrim)
+        {
+            str.erase(str.begin() + static_cast<long>(index));
+            if (!trimAll)
+            {
+                break;
+            }
+        }
+        else
+        {
+            break;
+        }
+    }
+}
 
 /**
-* @brief Removes all whitespace (\t \r \n ' ' \f) from
+ * @brief trimmed
+ * @param stringToTrim
+ * @param customCharToBeRemoved
+ * @return
+ */
+inline std::string trimmed(const std::string& stringToTrim,
+                           char customCharToBeRemoved,
+                           bool trimAll = true)
+{
+    std::string str = stringToTrim;
+    trimmedInPlace(str,
+                   customCharToBeRemoved,
+                   trimAll);
+    return str;
+}
+
+
+/**
+* @brief Removes all whitespace (\\t \\r \\n ' ' \\f) from
 *        the beginning and end of inputString.
 * @param Reference to the source string to operate upon
 */
@@ -810,19 +962,6 @@ inline size_t indexOf(const std::string &str,
     throw InvalidOperationException(msg);
 }
 
-/**
-* @brief Converts floating point values to "x.xxxx" form
-* @param floatValue Floating point value
-* @param digitsAfterDecimal Number of digits to include after decimal
-* @return string of converted floating point value
-*/
-inline std::string toString(double floatValue,
-                            int digitsAfterDecimal)
-{
-    std::ostringstream stream;
-    stream << std::fixed << std::setprecision(digitsAfterDecimal) << floatValue;
-    return stream.str();
-}
 
 /**
 * @brief Find value and return all text after it(exclusive)
@@ -984,9 +1123,7 @@ inline bool isFloat(const std::string &floatString)
     double f;
     iss >> std::noskipws >> f;
     return iss.eof() && !iss.fail();
-
 }
-
 
 /**
 * @brief Determines if inputString starts with value
@@ -1158,6 +1295,41 @@ inline void findAllThatStartWith(const std::vector<std::string> &items,
 }
 
 /**
+ * @brief findAllThatEqual
+ * @param items
+ * @param valueToMatch
+ * @param itemsOut
+ * @param isCaseSensitive
+ */
+inline void findAllThatEqual(const std::vector<std::string> &items,
+                        const std::string &valueToMatch,
+                        std::vector<std::string> &itemsOut,
+                        bool isCaseSensitive=true)
+{
+    if (isCaseSensitive)
+    {
+        for (size_t a1 = 0; a1 < items.size(); ++a1)
+        {
+            if (items[a1] == valueToMatch)
+            {
+                itemsOut.push_back(items[a1]);
+            }
+        }
+    }
+    else
+    {
+        std::string value = StringUtils::toUpper(valueToMatch);
+        for (size_t a1 = 0; a1 < items.size(); ++a1)
+        {
+            if (StringUtils::toUpper(items[a1]) == value)
+            {
+                itemsOut.push_back(items[a1]);
+            }
+        }
+    }
+}
+
+/**
  * @brief findAllThatEndWith
  * @param items
  * @param startsWithValue
@@ -1243,14 +1415,20 @@ inline std::string textBetween(const std::string &source,
  */
 inline void clean(std::vector<std::string> & items)
 {
-    for (int a1 = items.size()-1; a1>=0 ;--a1)
+    if (items.size() == 0)
     {
-        if (items[a1].empty())
+        return;
+    }
+    int lastIndex = static_cast<int>(items.size()) - 1;
+    for (int a1 = lastIndex; a1>=0 ;--a1)
+    {
+        size_t index = static_cast<size_t>(a1);
+        if (items[index].empty())
         {
-            items.erase(items.begin()+a1);
+            items.erase(items.begin()+index);
             continue;
         }
-        StringUtils::trimmedInPlace(items[a1]);
+        StringUtils::trimmedInPlace(items[index]);
     }
 }
 
@@ -1516,5 +1694,83 @@ inline size_t removeAllThatDoNotContain(std::vector<std::string> & vecOut,
     }
     return totalRemoved;
 }
+
+/**
+ * @brief removeNonAlphaNumericInPlace
+ * @param srcStr
+ */
+static inline void removeNonAlphaNumericInPlace(std::string & srcStr)
+{
+    for (int a1=srcStr.size()-1;a1>=0;--a1)
+    {
+        if (!std::isalnum(srcStr[a1]))
+        {
+            srcStr.erase(srcStr.begin()+a1);
+        }
+    }
+}
+
+/**
+ * @brief removeNonAlphaNumeric
+ * @param srcStr
+ * @return
+ */
+static inline std::string removeNonAlphaNumeric(const std::string & srcStr)
+{
+    std::string str = srcStr;
+    removeNonAlphaNumericInPlace(str);
+    return str;
+}
+
+/**
+ * @brief splitKeyValue
+ * @param itemToSplit
+ * @param delimiter
+ * @return
+ */
+static inline std::pair<std::string,std::string> splitKeyValue(const std::string& itemToSplit,
+                                                               const std::string& delimiter)
+{
+    std::vector<std::string> itemPair = StringUtils::split(itemToSplit,delimiter);
+    if (itemPair.size() > 1)
+    {
+        return std::make_pair(itemPair[0],itemPair[1]);
+    }
+    std::make_pair(itemToSplit,"");
+}
+
+/**
+ * @brief isEmpty
+ * @param srcStr
+ * @return
+ */
+static inline bool isEmpty(const std::string& srcStr)
+{    
+    return StringUtils::trimmed(srcStr).empty();
+}
+
+
+/**
+ * @brief isNumber
+ * @param potentialNumber
+ * @return
+ */
+inline bool isNumeric(const std::string& potentialNumber)
+{    
+    std::string numberStr = StringUtils::trimmed(potentialNumber);
+    if (numberStr.size() == 0 ||
+       (numberStr.size() == 1 &&
+        !std::isdigit(potentialNumber[0])))
+    {
+        return false;
+    }
+    numberStr = remove(numberStr,",");
+    numberStr = remove(numberStr,"-");
+    numberStr = remove(numberStr,"$");
+    return (isFloat(numberStr) ||
+            isSignedInteger(numberStr) ||
+            isUnsignedInteger(numberStr));
+}
+
 }}}} //namespace
 #endif //_CBTEK_COMMON_UTILITY_STRING_UTILS_HPP_

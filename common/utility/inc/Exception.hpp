@@ -23,15 +23,22 @@ SOFTWARE.
 
 */
 
-#ifndef _CBTEK_COMMON_UTILITY_EXCEPTION_HPP_
-#define _CBTEK_COMMON_UTILITY_EXCEPTION_HPP_
+#pragma once
 
 #include <exception>
 #include <sstream>
 #include <string>
+#include <string.h>
 
-#define EXCEPTION_TAG "Exception thrown in "+std::string(__FILE__)+"("+std::string(__func__)+") on line ("+std::to_string(__LINE__)+"): "
 
+#ifdef __WIN32
+    #define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
+#else
+    #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#endif
+
+#define EXCEPTION_TAG "Exception thrown in "+std::string(__FILENAME__)+"::"+std::string(__func__)+", Line="+std::to_string(__LINE__)+": "
+#define EXCEPTION_TAG_LINE "Exception thrown in "+std::string(__FILENAME__)+"::"+std::string(__func__)+", Line="+std::to_string(__LINE__)+": \n\n"
 namespace cbtek{
 namespace common{
 namespace utility{
@@ -83,7 +90,10 @@ namespace utility{
             std::string m_message;\
     };\
 
+CREATE_EXCEPTION(GenericException,"")
+CREATE_EXCEPTION(FeatureNotSupportedException,"Requested feature is not supported")
 CREATE_EXCEPTION(FileNotFoundException,"FileNotFoundException")
+CREATE_EXCEPTION(FileParseException,"FileParseException")
 CREATE_EXCEPTION(FileAccessException,"FileAccessException")
 CREATE_EXCEPTION(IndexOutOfRangeException,"Index is out of range")
 CREATE_EXCEPTION(InvalidOperationException,"Invalid operation occured")
@@ -91,6 +101,6 @@ CREATE_EXCEPTION(InvalidParameterException,"Invalid parameter exception")
 CREATE_EXCEPTION(InvalidMapKeyException,"Invalid Map Key")
 CREATE_EXCEPTION(InvalidCastException,"Invalid Cast Exception")
 
-}}}//namespace
+#define THROW_GENERIC_EXCEPTION(MESSAGE) throw cbtek::common::utility::GenericException(EXCEPTION_TAG_LINE+MESSAGE);
 
-#endif // _CBTEK_COMMON_UTILITY_EXCEPTION_HPP_
+}}}//namespace

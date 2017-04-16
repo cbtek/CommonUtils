@@ -1,12 +1,46 @@
+/**
+MIT License
+
+Copyright (c) 2016 cbtek
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+
+#pragma once
 
 #include "utility/inc/StringUtils.hpp"
+#include "utility/inc/DateEntity.h"
 
 namespace cbtek {
 namespace common {
 namespace utility {
 namespace DateUtils {
 
-static inline std::string toShortDateString(const DateEntity &date, const std::string &format)
+/**
+ * @brief toShortDateString
+ * @param date
+ * @param format
+ * @return
+ */
+static inline std::string toShortDateString(const DateEntity &date,
+                                            const std::string &format="mm-dd-yyyy")
 {
     std::string dateStr=format;
 
@@ -27,6 +61,11 @@ static inline std::string toShortDateString(const DateEntity &date, const std::s
     return dateStr;
 }
 
+/**
+ * @brief toLongDateString
+ * @param date
+ * @return
+ */
 static inline std::string toLongDateString(const DateEntity &date)
 {
     std::string months[12] =
@@ -43,6 +82,10 @@ static inline std::string toLongDateString(const DateEntity &date)
     return "";
 }
 
+/**
+ * @brief getCurrentDate
+ * @return
+ */
 static inline DateEntity getCurrentDate()
 {
     time_t t = time(0);
@@ -50,4 +93,22 @@ static inline DateEntity getCurrentDate()
     return DateEntity(now->tm_mon + 1,now->tm_mday,now->tm_year + 1900);
 }
 
-}}}//namespace
+/**
+ * @brief toCurrentLongDateString
+ * @return
+ */
+static inline std::string toCurrentLongDateString()
+{
+    return toLongDateString(getCurrentDate());
+}
+
+/**
+ * @brief toCurrentShortDateString
+ * @return
+ */
+static inline std::string toCurrentShortDateString()
+{
+    return toShortDateString(getCurrentDate());
+}
+
+}}}}//namespace

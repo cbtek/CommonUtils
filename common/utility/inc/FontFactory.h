@@ -20,36 +20,59 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
 */
 
 #pragma once
 
-#include "XMLReader.h"
-#include "XMLDataElement.h"
-#include "XMLStreamWriter.h"
-
-using namespace cbtek::common::utility;
+#include "utility/inc/Font.h"
 
 namespace cbtek {
 namespace common {
 namespace utility {
 
-class XMLUtils
+namespace fontStyle{
+enum FontStyle
 {
+    NORMAL=0,
+    HEADING_1,
+    HEADING_2,
+    HEADING_3,
+    HEADING_4,
+    HEADING_5,
+    HEADING_6,
+    HEADING_7,
+    HEADING_8,
+    HEADING_9,
+    HEADING_10,
+    SYSTEM_SMALL,
+    SYSTEM_MEDIUM,
+    SYSTEM_BIG
+};
+
+}
+class FontFactory
+{
+
 public:
     /**
-     * @brief getEncodedString
-     * @param rawString
+     * @brief create
+     * @param style
      * @return
      */
-    static std::string getEncodedString(const std::string &  rawString);
+    static Font create(const fontStyle::FontStyle & style);
 
     /**
-     * @brief getDecodedString
-     * @param xmlString
+     * @brief create
+     * @param fontString
      * @return
      */
-    static std::string getDecodedString(const std::string & xmlString);
+    static Font create(const std::string & fontString);
+
+private:
+    FontFactory();
+    FontFactory(const FontFactory &);
+    FontFactory& operator=(const FontFactory&);
 };
 
 }}}//namespace

@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
-#ifndef _CBTEK_COMMON_UTILITY_OBJECTLIST_HPP_
-#define _CBTEK_COMMON_UTILITY_OBJECTLIST_HPP_
+
+#pragma once
 
 #include <cstdint>
 #include <vector>
@@ -35,8 +35,6 @@ SOFTWARE.
 #include "utility/inc/UtilityCommon.hpp"
 #include "utility/inc/Random.h"
 
-
-
 namespace cbtek{
 namespace common{
 namespace utility{
@@ -45,46 +43,148 @@ template <typename T>
 class CBTEK_UTILS_DLL ObjectList  : public std::vector<T>
 {
     public:    
+        /**
+         * @brief ObjectList
+         */
         ObjectList();
 
+        /**
+         * @brief operator <<
+         * @param value
+         * @return
+         */
         ObjectList & operator<<(const T & value);
 
+        /**
+         * @brief operator <<
+         * @param value
+         * @return
+         */
         ObjectList & operator<<(const ObjectList<T> & value);
 
+        /**
+         * @brief contains
+         * @param value
+         * @return
+         */
         bool contains(const T & value) const;
 
+        /**
+         * @brief contains
+         * @param value
+         * @return
+         */
         bool contains(const T & value);
 
+        /**
+         * @brief getLastIndex
+         * @return
+         */
         size_t getLastIndex() const;
 
+        /**
+         * @brief removeAt
+         * @param index
+         */
         void removeAt(size_t index);
 
+        /**
+         * @brief removeFirst
+         * @return
+         */
         bool removeFirst();
 
+        /**
+         * @brief removeLast
+         * @return
+         */
         bool removeLast();
 
+        /**
+         * @brief pushFront
+         * @param value
+         */
         void pushFront(const T & value);
 
+        /**
+         * @brief takeAt
+         * @param index
+         * @return
+         */
         T takeAt(size_t index);
 
+        /**
+         * @brief add
+         * @param value
+         * @return
+         */
         size_t add(const T & value);
 
+        /**
+         * @brief addValues
+         * @param values
+         */
+        void addValues(const ObjectList<T> & values);
+
+        /**
+         * @brief indexOf
+         * @param value
+         * @return
+         */
         size_t indexOf(const T & value);
 
+        /**
+         * @brief insertAfterValue
+         * @param insertAfterThisValue
+         * @param valueToBeInserted
+         * @return
+         */
         bool insertAfterValue(const T & insertAfterThisValue, const T & valueToBeInserted);
 
+        /**
+         * @brief insertBeforeValue
+         * @param insertBeforeThisValue
+         * @param valueToBeInserted
+         * @return
+         */
         bool insertBeforeValue(const T & insertBeforeThisValue, const T & valueToBeInserted);
 
+        /**
+         * @brief insertAfterIndex
+         * @param index
+         * @param valueToBeInserted
+         * @return
+         */
         bool insertAfterIndex(size_t index, const T & valueToBeInserted);
 
+        /**
+         * @brief insertBeforeIndex
+         * @param index
+         * @param valueToBeInserted
+         * @return
+         */
         bool insertBeforeIndex(size_t index, const T & valueToBeInserted);
 
+        /**
+         * @brief getRandomValue
+         * @return
+         */
         const T & getRandomValue() const;
 
+        /**
+         * @brief sort
+         */
         void sort();
 
+        /**
+         * @brief reverseSort
+         */
         void reverseSort();
 
+        /**
+         * @brief getNext
+         * @return
+         */
         T getNext();
 
     private:
@@ -258,11 +358,11 @@ size_t ObjectList<T>::add(const T & value)
 }
 
 template<typename T>
-void add(const ObjectList<T> & items)
+void ObjectList<T>::addValues(const ObjectList<T> & values)
 {
-    for (size_t a1 = 0;a1<items.size();++a1)
+    for (size_t a1 = 0;a1<values.size();++a1)
     {
-        push_back(items[a1]);
+        push_back(values[a1]);
     }
 }
 
@@ -339,6 +439,4 @@ typedef Int16List::const_iterator Int16ListConstIter;
 typedef Int32List::const_iterator Int32ListConstIter;
 typedef Int64List::const_iterator Int64ListConstIter;
 typedef SizeTList::const_iterator SizeTListConstIter;
-
 }}}//namespace
-#endif // _CBTEK_COMMON_UTILITY_OBJECTLIST_HPP_
